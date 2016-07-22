@@ -13,7 +13,15 @@ class MongoDao(val database: String, val servers: Seq[String]) {
   val connection = driver.connection(servers)
   val db = connection(database)
 
-  def queryById(id: String) = BSONDocument("_id" -> BSONObjectID(id))
+  def queryById(id: String) = try {
+    // we don't want malformed BSONObjectID strings to result in a 500
+    // so we catch the IllegalArgumentException
+    BSONDocument("_id" -> BSONObjectID(id))
+  } catch {
+      // effectively results in a 404
+      case iae:IllegalArgumentException => BSONDocument("_id" -> BSONObjectID("00" * 12))
+      case t: Throwable => throw t
+  }
 
   def emptyQuery = BSONDocument()
 }

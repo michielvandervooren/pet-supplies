@@ -1,8 +1,7 @@
 package nl.sogeti.s2g2.reactive.service
 
-import nl.sogeti.s2g2.reactive.controller.rest.OrderProtocol
 import nl.sogeti.s2g2.reactive.dao.OrderDao
-import nl.sogeti.s2g2.reactive.domain.OrderEntity
+import nl.sogeti.s2g2.reactive.domain.Order
 
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -10,24 +9,16 @@ import scala.concurrent.ExecutionContext.Implicits.global
 /**
   * Created by voorenmi on 3-7-2016.
   */
-class OrderService(database: String, servers: Seq[String]) extends OrderDao(database, servers) with OrderProtocol {
-  def createOrder(orderEntity: OrderEntity): Future[OrderCreated] = save(orderEntity)
+class OrderService(database: String, servers: Seq[String]) extends OrderDao(database, servers) {
 
-  def deleteOrderEntity(id: String) = deleteById(id)
+  def createOrder(orderEntity: Order): Future[Order] = save(orderEntity)
 
-  def findAllOrders = findAll map extractOrders
+  def deleteOrder(id: String): Future[String] = deleteById(id)
 
-  def findOrderById(id: String) = findById(id) map extractOrder
+  def findAllOrders: Future[List[Order]] = findAll
 
-  def findOrdersByCustomer(customerId: String) = findByCustomerId(customerId) map extractOrders
+  def findOrderById(id: String): Future[Option[Order]] = findById(id)
 
-  private def extractOrder(maybeOrder: Option[OrderEntity]) = maybeOrder match {
-    case Some(orderEntity) => toOrder(orderEntity)
-    case _ => OrderNotFound
-  }
+  def findOrdersByCustomer(customerId: String): Future[List[Order]] = findByCustomerId(customerId)
 
-  private def extractOrders(orders: List[OrderEntity]) = orders match {
-    case Nil => OrderNotFound
-    case l:List[OrderEntity] => Orders(l.map {o => toOrder(o)})
-  }
 }

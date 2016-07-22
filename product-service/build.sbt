@@ -1,6 +1,6 @@
 organization := "s2g2.reactive"
 
-name := "order-service"
+name := "product-service"
 
 version := "1.0-SNAPSHOT"
 
