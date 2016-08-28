@@ -19,29 +19,10 @@ object CategoryResource extends Resource {
   val productService = new ProductService(database, servers)
 
   def routes: Route = pathPrefix("categories") {
-    pathEnd {
-      post {
-        entity(as[Category]) { order =>
-          complete(productService.createCategory(order))
-        }
-      } ~
-      get {
-        complete(productService.findAllCategories)
-      }
-    } ~
-    path(Segment) { name =>
-      get {
-        complete(productService.findCategoryByName(name))
-      } ~
-      put {
-        entity(as[Category]) { category =>
-          complete(productService.updateCategory(name, category))
-        }
-      } ~
-      delete {
-        complete(productService.deleteCategory(name))
-      }
-    }
+    crudRoutesFor[Category](all = productService.findAllCategories,
+                            read = productService.findCategoryByName,
+                            create = productService.createCategory,
+                            update = productService.updateCategory,
+                            remove = productService.deleteCategory)
   }
-
 }

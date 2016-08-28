@@ -20,36 +20,31 @@ trait Resource extends Directives with JsonSupport {
       case None => complete(404, None)
     }
 
-//  type Id = String
-//  type All[R] = () => Future[List[R]]
-//  type Get[R] = (Id) => Future[Option[R]]
-//  type Post[R] = (R) => Future[R]
-//  type Put[R] = (Id, R) => Future[R]
-//  type Delete[R] = (Id) => Future[Id]
-//
-//  def crudRoutesFor[R](all: All[R])(create: Post[R])(read: Get[R])(update: Put[R])(remove: Delete[R]): Route = {
-//    pathEnd {
-//      post {
-//        entity(as[R]) { r =>
-//          complete(create(r))
-//        }
-//      } ~
-//      get {
-//        complete(all)
-//      }
-//    } ~
-//    path(Segment) { id =>
-//      delete {
-//        complete(remove(id))
-//      } ~
-//      get {
-//        complete(read(id))
-//      } ~
-//      put {
-//        entity(as[R]) { r =>
-//          complete(update(id, r))
-//        }
-//      }
-//    }
-//  }
+  def crudRoutesFor[R](all: => Future[List[R]], create: R => Future[R], read: String => Future[Option[R]], update: (String, R) => Future[R], remove:(String) => Future[String])
+                      (implicit um: FromRequestUnmarshaller[R], m: ToResponseMarshaller[R]): Route = {
+
+    pathEnd {
+      post {
+        entity(as[R]) { r =>
+          complete(create(r))
+        }
+      } ~
+      get {
+        complete(all)
+      }
+    } ~
+    path(Segment) { id =>
+      delete {
+        complete(remove(id))
+      } ~
+      get {
+        complete(read(id))
+      } ~
+      put {
+        entity(as[R]) { r =>
+          complete(update(id, r))
+        }
+      }
+    }
+  }
 }
